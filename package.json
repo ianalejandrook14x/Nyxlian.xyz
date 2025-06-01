@@ -1,10 +1,10 @@
 {
-"name": "Frieren",
-"version": "0.0.1",
-"description": "Simple WhatsApp Bot Multi Device",
+"name": "Nakano Nino",
+"version": "1.0",
+"description": "Creado por ianalejandrook15x",
 "main": "index.js",
 "type": "module",
-"botName": "Frieren",
+"botName": "Nino",
 "directories": {
 "lib": "lib",
 "src": "src",
@@ -19,16 +19,16 @@
 "eslint": "eslint .",
 "eslintfix": "eslint --fix ."
 },
-"homepage": "https://github.com/ianalejandrook14x/Frieren",
+"homepage": "https://github.com/ianalejandrook14x/Nyxlian.xyz",
 "author": {
-"name": "ianalejandrook14x"
+"name": "ianalejandrook15x"
 },
 "repository": {
 "type": "git",
-"url": "git+https://github.com/ianalejandrook15x/Frieren.git"
+"url": "git+https://github.com/ianalejandrook15x/Nyxlian.xyz.git"
 },
 "bugs": {
-"url": "https://github.com/ianalejandrook15x/Frieren/issues"
+"url": "https://github.com/ianalejandrook15x/Nyxlian.xyz/issues"
 },
 "license": "GPL-3.0-or-later",
 "dependencies": {
