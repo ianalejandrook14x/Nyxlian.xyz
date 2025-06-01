@@ -5,6 +5,7 @@ import path, { join } from 'path'
 import { unwatchFile, watchFile } from 'fs'
 import chalk from 'chalk'
 import fetch from 'node-fetch'
+import fs from 'fs'
 
 const { proto } = (await import('@whiskeysockets/baileys')).default
 const isNumber = x => typeof x === 'number' && !isNaN(x)
@@ -20,6 +21,13 @@ if (!chatUpdate)
 return
     this.pushMessage(chatUpdate.messages).catch(console.error)
 let m = chatUpdate.messages[chatUpdate.messages.length - 1]
+// Configuración general
+global.botConfig = global.botConfig || {
+    name: "Ian",
+    banner: "https://qu.ax/RoEhs.jpg",
+    prefix: "."
+}
+
 if (!m)
 return;
 if (global.db.data == null)
@@ -40,10 +48,10 @@ if (!isNumber(user.exp))
 user.exp = 0
 if (!isNumber(user.yenes))
 user.yenes = 10
-if (!isNumber(user.joincount))
-user.joincount = 1
-if (!isNumber(user.diamond))
-user.diamond = 3
+if (!isNumber(user.bank))
+user.bank = 0
+if (!isNumber(user.lastRob))
+user.lastRob = 0
 if (!isNumber(user.lastadventure))
 user.lastadventure = 0
 if (!isNumber(user.lastclaim))
@@ -111,9 +119,9 @@ user.premiumTime = 0
 } else
                 global.db.data.users[m.sender] = {
 exp: 0,
-yenes: 10,
-joincount: 1,
-diamond: 3,
+yenes: 0,
+bank: 0,
+lastRob: 0,
 lastadventure: 0,
 lastclaim: 0,
 lastcofre: 0,
@@ -266,6 +274,28 @@ let usedPrefix
 
 const groupMetadata = (m.isGroup ? ((conn.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch(_ => null)) : {}) || {}
 const participants = (m.isGroup ? groupMetadata.participants : []) || []
+// Self mode system
+const settings = global.db.data.settings[this.user.jid] || {}
+const isSelf = !!settings.self
+
+// Guardar el estado de self en la base de datos global
+global.isSelf = isSelf
+
+// Guardar el estado de self en la base de datos de cada chat
+let chat = global.db.data.chats[m.chat]
+if (typeof chat !== 'object') global.db.data.chats[m.chat] = {}
+if (chat && !('self' in chat)) chat.self = false
+
+// Solo responder al owner en modo self (privado)
+if (isSelf && !isOwner) {
+    // También guardamos el estado en el chat para referencia
+    if (chat) chat.self = true
+    return
+} else {
+    // Cuando está en público, aseguramos que el chat esté en modo público
+    if (chat) chat.self = false
+}
+
 const user = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) === m.sender) : {}) || {}
 const bot = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) == this.user.jid) : {}) || {}
 const isRAdmin = user?.admin == 'superadmin' || false
@@ -598,6 +628,29 @@ console.log(chalk.magenta("Se actualizo 'handler.js'"))
 //if (global.reloadHandler) console.log(await global.reloadHandler())
 
 if (global.conns && global.conns.length > 0 ) {
+
+const pluginDirs = [
+    './plugins/',
+    './plugins/Descargadores/',
+    './plugins/Juegos/'
+]
+
+for (const dir of pluginDirs) {
+    const absDir = path.join(path.dirname(fileURLToPath(import.meta.url)), dir)
+    if (fs.existsSync(absDir)) {
+        for (const file of fs.readdirSync(absDir)) {
+            if (!file.endsWith('.js')) continue
+            const pluginPath = join(absDir, file)
+            try {
+                const plugin = (await import(pluginPath)).default
+                global.plugins[file] = plugin
+            } catch (e) {
+                console.error(`Error al cargar ${file} de ${dir}:`, e)
+            }
+        }
+    }
+}
+
 const users = [...new Set([...global.conns.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn)])];
 for (const userr of users) {
 userr.subreloadHandler(false)
