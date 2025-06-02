@@ -274,27 +274,11 @@ let usedPrefix
 
 const groupMetadata = (m.isGroup ? ((conn.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch(_ => null)) : {}) || {}
 const participants = (m.isGroup ? groupMetadata.participants : []) || []
-// Self mode system
-const settings = global.db.data.settings[this.user.jid] || {}
-const isSelf = !!settings.self
-
-// Guardar el estado de self en la base de datos global
-global.isSelf = isSelf
 
 // Guardar el estado de self en la base de datos de cada chat
 let chat = global.db.data.chats[m.chat]
 if (typeof chat !== 'object') global.db.data.chats[m.chat] = {}
 if (chat && !('self' in chat)) chat.self = false
-
-// Solo responder al owner en modo self (privado)
-if (isSelf && !isOwner) {
-    // También guardamos el estado en el chat para referencia
-    if (chat) chat.self = true
-    return
-} else {
-    // Cuando está en público, aseguramos que el chat esté en modo público
-    if (chat) chat.self = false
-}
 
 const user = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) === m.sender) : {}) || {}
 const bot = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) == this.user.jid) : {}) || {}
